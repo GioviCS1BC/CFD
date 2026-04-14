@@ -11,11 +11,9 @@ POWER_GW = 1
 POWER_MW = 1000 
 POWER_W = 1_000_000_000
 
-st.title("⚛️ Simulatore Finanziario Energia (Standard 1 GW)")
+st.title("Simulatore Finanziario Energia")
 st.markdown(f"""
-Analisi di redditività per un impianto da **1 GW**. 
-**Nota:** I costi in €/Watt vengono ora correttamente scalati su base GigaWatt ($10^9$ Watt).
-""")
+Analisi di redditività per un impianto da **1 GW**. """)
 
 # --- LOGICA DI CALCOLO CORRETTA ---
 def run_simulation(capex_w, oem_w, cf, strike_mwh, wacc_base, const_yrs, op_yrs, infl, is_idx, is_risk):
