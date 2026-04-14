@@ -78,7 +78,7 @@ with col2:
     st.write("**📈 Performance**")
     capacity_factor = st.slider("Capacity Factor (%)", 10, 100, 90)
     strike_price = st.slider("Strike Price CFD (€/MWh)", 30, 250, 100)
-    op_life = st.slider("Anni di Esercizio", 10, 80, 30)
+    op_life = st.slider("Anni di Esercizio", 10, 60, 40)
 
 with col3:
     st.write("**⚠️ Finanza**")
