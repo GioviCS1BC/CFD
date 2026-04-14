@@ -13,7 +13,7 @@ considerando che **il tempo è un costo**.
 """)
 
 # --- LOGICA DI CALCOLO AVANZATA ---
-def run_simulation(capex, const_years, discount_rate, inflation, strike_price, op_life, is_indexed, has_risk):
+def run_simulation(capex, const_years, discount_rate, inflation, annual_revenue, op_life, is_indexed, has_risk):
     # Il rischio aumenta il costo del capitale (WACC)
     effective_rate = discount_rate + (0.03 if has_risk else 0)
     
@@ -35,9 +35,9 @@ def run_simulation(capex, const_years, discount_rate, inflation, strike_price, o
         else:
             # Fase Operativa
             # Ricavo: indicizzato o fisso
-            rev = strike_price * ((1 + inflation)**y) if is_indexed else strike_price
-            # OPEX: stimato al 20% dello strike, sempre inflazionato
-            opex = (strike_price * 0.20) * ((1 + inflation)**y)
+            rev = annual_revenue * ((1 + inflation)**y) if is_indexed else annual_revenue
+            # OPEX: stimato al 20% del ricavo base iniziale, inflazionato nel tempo
+            opex = (annual_revenue * 0.20) * ((1 + inflation)**y)
             cf = rev - opex
         cash_flows.append(cf)
     
@@ -61,36 +61,51 @@ metrics_spot = st.empty()
 st.divider()
 
 # --- INPUT PARAMETERS ---
-st.subheader("⚙️ Parametri dell'Investimento")
+st.subheader("⚙️ Parametri Tecnici e Finanziari")
 c1, c2, c3 = st.columns(3)
 
 with c1:
-    capex_val = st.slider("Investimento (CAPEX) M€", 10, 500, 100, step=10)
-    const_time = st.slider("Anni Autorizzazione/Costruzione", 1, 10, 3)
-    strike_val = st.slider("Ricavo Annuo (Strike Price) M€", 5, 100, 25)
+    st.markdown("**🛠️ Dati Impianto e Costo**")
+    potenza_mw = st.slider("Potenza Impianto (MW)", 1, 1000, 100, step=1)
+    costo_watt = st.slider("Costo al Watt (€/W)", 0.1, 10.0, 1.0, step=0.1)
+    const_time = st.slider("Anni Autorizzazione/Costruzione", 1, 15, 3)
 
 with c2:
-    wacc_base = st.slider("Tasso di Sconto Base (WACC) %", 0.0, 15.0, 7.0) / 100
-    infl_val = st.slider("Tasso Inflazione %", 0.0, 10.0, 2.0) / 100
-    op_time = st.slider("Anni di Operatività", 10, 30, 20)
+    st.markdown("**⚡ Produzione e Mercato**")
+    capacity_factor = st.slider("Capacity Factor (%)", 5, 100, 20) / 100
+    strike_mwh = st.slider("Strike Price (€/MWh)", 20, 300, 60, step=5)
+    op_time = st.slider("Anni di Operatività", 10, 40, 20)
 
 with c3:
-    st.write("**Clausole e Rischi**")
+    st.markdown("**📉 Finanza e Rischio**")
+    wacc_base = st.slider("Tasso di Sconto Base (WACC) %", 0.0, 15.0, 7.0, step=0.5) / 100
+    infl_val = st.slider("Tasso Inflazione %", 0.0, 10.0, 2.0, step=0.5) / 100
+    
+    st.write("**Clausole Contrattuali**")
     indexed = st.checkbox("CFD Indicizzato all'inflazione", value=True)
     risk = st.checkbox("Applica Fattore di Rischio (+3% WACC)", value=False)
-    st.info("Il rischio simula incertezza normativa o tecnologica.")
 
-# Esecuzione
-df_res, rate_used, capex_real = run_simulation(capex_val, const_time, wacc_base, infl_val, strike_val, op_time, indexed, risk)
+# --- CALCOLI INTERMEDI ---
+# CAPEX Nominale in M€: (MW * 1.000.000) * (€/W) / 1.000.000 = MW * Costo_W
+capex_val = potenza_mw * costo_watt
 
-# Calcolo VAN in valore assoluto e percentuale rispetto al CAPEX nominale
+# Produzione e Ricavo Annuo
+produzione_annua_mwh = potenza_mw * 8760 * capacity_factor
+ricavo_annuo_meuro = (produzione_annua_mwh * strike_mwh) / 1_000_000
+
+# Esecuzione della simulazione
+df_res, rate_used, capex_real = run_simulation(capex_val, const_time, wacc_base, infl_val, ricavo_annuo_meuro, op_time, indexed, risk)
+
+# Calcolo VAN assoluto e in percentuale
 npv_absolute = df_res['CF_Attualizzato'].sum()
 npv_percentage = (npv_absolute / capex_val) * 100
 
 # --- RENDERING RISULTATI ---
 with metrics_spot:
+    # Mostriamo i dati macro derivati sopra i KPI principali
+    st.caption(f"📊 **Dati Impianto Derivati:** Investimento Nominale: **{capex_val:,.1f} M€** | Produzione Annua: **{produzione_annua_mwh:,.0f} MWh** | Ricavo Annuo Base: **{ricavo_annuo_meuro:,.2f} M€**")
+    
     m1, m2, m3 = st.columns(3)
-    # Visualizzazione VAN in percentuale
     m1.metric("VAN del Progetto", f"{npv_percentage:.2f} %", 
               delta="Redditizio" if npv_absolute > 0 else "In Perdita", delta_color="normal")
     m2.metric("CAPEX Reale (Capitalizzato)", f"{capex_real:.2f} M€", 
@@ -130,9 +145,9 @@ with exp:
     with st.expander("📚 Analisi del Valore e del Tempo"):
         st.write(f"""
         Il **VAN del Progetto** espresso in percentuale ({npv_percentage:.2f}%) indica il rendimento netto attualizzato 
-        rispetto all'esborso nominale di {capex_val} M€. 
+        rispetto all'esborso nominale di {capex_val:.1f} M€. 
         
-        **L'effetto del tempo:** Spendere {capex_val} M€ in {const_time} anni non equivale a spenderli oggi. 
+        **L'effetto del tempo:** Spendere {capex_val:.1f} M€ in {const_time} anni non equivale a spenderli oggi. 
         Durante la costruzione, i capitali impiegati non rendono e accumulano 'passività' (costo del denaro). 
         Per questo il **CAPEX Reale** (il debito accumulato all'accensione) è superiore a quello nominale.
         """)
