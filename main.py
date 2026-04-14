@@ -54,10 +54,10 @@ def run_simulation(capex, const_years, discount_rate, inflation, annual_revenue,
 # --- DEFINIZIONE PRESET TECNOLOGIE ---
 presets = {
     "Manuale": None,
-    "Fotovoltaico": {"mw": 100, "costo_w": 0.8, "om": 10, "const": 1, "cf": 18, "strike": 60, "life": 25, "wacc": 5.0},
-    "Eolico a terra": {"mw": 100, "costo_w": 1.3, "om": 15, "const": 2, "cf": 25, "strike": 70, "life": 25, "wacc": 5.0},
-    "Nucleare (Large)": {"mw": 1600, "costo_w": 7.0, "om": 15, "const": 10, "cf": 90, "strike": 90, "life": 60, "wacc": 7.0},
-    "SMR (Small Modular Reactor)": {"mw": 300, "costo_w": 5.5, "om": 18, "const": 4, "cf": 90, "strike": 100, "life": 60, "wacc": 7.0}
+    "Fotovoltaico": {"mw": 100, "costo_w": 0.8, "om": 10.0, "const": 1, "cf": 18, "strike": 60, "life": 25, "wacc": 5.0},
+    "Eolico a terra": {"mw": 100, "costo_w": 1.3, "om": 15.0, "const": 2, "cf": 25, "strike": 70, "life": 25, "wacc": 5.0},
+    "Nucleare (Large)": {"mw": 1600, "costo_w": 7.0, "om": 15.0, "const": 10, "cf": 90, "strike": 90, "life": 60, "wacc": 7.0},
+    "SMR (Small Modular Reactor)": {"mw": 300, "costo_w": 5.5, "om": 18.0, "const": 4, "cf": 90, "strike": 100, "life": 60, "wacc": 7.0}
 }
 
 # --- INTERFACCIA GRAFICA ---
@@ -69,7 +69,6 @@ st.divider()
 # --- INPUT PARAMETERS ---
 st.subheader("⚙️ Selezione Tecnologia e Parametri")
 
-# Tendina Presetting
 scelta_tech = st.selectbox("Seleziona una Tecnologia (carica preset)", list(presets.keys()))
 p = presets[scelta_tech]
 
@@ -77,20 +76,21 @@ c1, c2, c3 = st.columns(3)
 
 with c1:
     st.markdown("**🛠️ Dati Impianto e Costi**")
-    potenza_mw = st.slider("Potenza Impianto (MW)", 1, 3500, p["mw"] if p else 1000, step=10)
-    costo_watt = st.slider("CAPEX: Costo al Watt (€/W)", 0.1, 12.0, p["costo_w"] if p else 5.0, step=0.1)
-    om_mwh = st.slider("OPEX: Costo O&M (€/MWh)", 1.0, 100.0, p["om"] if p else 15.0, step=1.0)
-    const_time = st.slider("Anni Autorizzazione/Costruzione", 1, 20, p["const"] if p else 8)
+    # Aggiunto int() e float() per garantire coerenza nei tipi di dato degli slider
+    potenza_mw = st.slider("Potenza Impianto (MW)", 1, 3500, int(p["mw"]) if p else 1000, step=10)
+    costo_watt = st.slider("CAPEX: Costo al Watt (€/W)", 0.1, 12.0, float(p["costo_w"]) if p else 5.0, step=0.1)
+    om_mwh = st.slider("OPEX: Costo O&M (€/MWh)", 1.0, 100.0, float(p["om"]) if p else 15.0, step=1.0)
+    const_time = st.slider("Anni Autorizzazione/Costruzione", 1, 20, int(p["const"]) if p else 8)
 
 with c2:
     st.markdown("**⚡ Produzione e Mercato**")
-    capacity_factor = st.slider("Capacity Factor (%)", 5, 100, p["cf"] if p else 90) / 100
-    strike_mwh = st.slider("Strike Price (€/MWh)", 20, 300, p["strike"] if p else 80, step=5)
-    op_time = st.slider("Anni di Operatività", 10, 80, p["life"] if p else 60)
+    capacity_factor = st.slider("Capacity Factor (%)", 5, 100, int(p["cf"]) if p else 90) / 100
+    strike_mwh = st.slider("Strike Price (€/MWh)", 20, 300, int(p["strike"]) if p else 80, step=5)
+    op_time = st.slider("Anni di Operatività", 10, 80, int(p["life"]) if p else 60)
 
 with c3:
     st.markdown("**📉 Finanza e Rischio**")
-    wacc_base = st.slider("Tasso di Sconto Base (WACC) %", 0.0, 15.0, p["wacc"] if p else 6.0, step=0.5) / 100
+    wacc_base = st.slider("Tasso di Sconto Base (WACC) %", 0.0, 15.0, float(p["wacc"]) if p else 6.0, step=0.5) / 100
     infl_val = st.slider("Tasso Inflazione %", 0.0, 10.0, 2.0, step=0.5) / 100
     
     st.write("**Clausole Contrattuali**")
