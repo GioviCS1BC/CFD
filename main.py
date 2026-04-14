@@ -74,7 +74,7 @@ with c2:
     st.markdown("**⚡ Produzione e Mercato**")
     capacity_factor = st.slider("Capacity Factor (%)", 5, 100, 20) / 100
     strike_mwh = st.slider("Strike Price (€/MWh)", 20, 300, 60, step=5)
-    op_time = st.slider("Anni di Operatività", 10, 40, 20)
+    op_time = st.slider("Anni di Operatività", 10, 60, 20)
 
 with c3:
     st.markdown("**📉 Finanza e Rischio**")
