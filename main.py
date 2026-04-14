@@ -51,13 +51,15 @@ def run_simulation(capex, const_years, discount_rate, inflation, annual_revenue,
     capex_cap = sum([(capex/const_years) * ((1 + effective_rate)**(const_years - y)) for y in range(1, const_years + 1)])
     return df, effective_rate, capex_cap
 
-# --- DEFINIZIONE PRESET TECNOLOGIE ---
+# --- DEFINIZIONE PRESET TECNOLOGIE (AGGIORNATI) ---
 presets = {
     "Manuale": None,
     "Fotovoltaico": {"mw": 100, "costo_w": 0.8, "om": 10.0, "const": 1, "cf": 18, "strike": 60, "life": 25, "wacc": 5.0},
     "Eolico a terra": {"mw": 100, "costo_w": 1.3, "om": 15.0, "const": 2, "cf": 25, "strike": 70, "life": 25, "wacc": 5.0},
-    "Nucleare (Large)": {"mw": 1600, "costo_w": 7.0, "om": 15.0, "const": 10, "cf": 90, "strike": 90, "life": 60, "wacc": 7.0},
-    "SMR (Small Modular Reactor)": {"mw": 300, "costo_w": 5.5, "om": 18.0, "const": 4, "cf": 90, "strike": 100, "life": 60, "wacc": 7.0}
+    # Dati Nucleare aggiornati su costi reali FOAK/NOAK occidentali
+    "Nucleare (Large)": {"mw": 1600, "costo_w": 11.0, "om": 30.0, "const": 12, "cf": 90, "strike": 140, "life": 60, "wacc": 7.0},
+    # Dati SMR aggiornati post-revisione costi (es. NuScale)
+    "SMR (Small Modular Reactor)": {"mw": 300, "costo_w": 8.5, "om": 25.0, "const": 5, "cf": 90, "strike": 120, "life": 60, "wacc": 7.0}
 }
 
 # --- INTERFACCIA GRAFICA ---
@@ -76,9 +78,8 @@ c1, c2, c3 = st.columns(3)
 
 with c1:
     st.markdown("**🛠️ Dati Impianto e Costi**")
-    # Aggiunto int() e float() per garantire coerenza nei tipi di dato degli slider
     potenza_mw = st.slider("Potenza Impianto (MW)", 1, 3500, int(p["mw"]) if p else 1000, step=10)
-    costo_watt = st.slider("CAPEX: Costo al Watt (€/W)", 0.1, 12.0, float(p["costo_w"]) if p else 5.0, step=0.1)
+    costo_watt = st.slider("CAPEX: Costo al Watt (€/W)", 0.1, 15.0, float(p["costo_w"]) if p else 5.0, step=0.1) # Limite alzato a 15.0
     om_mwh = st.slider("OPEX: Costo O&M (€/MWh)", 1.0, 100.0, float(p["om"]) if p else 15.0, step=1.0)
     const_time = st.slider("Anni Autorizzazione/Costruzione", 1, 20, int(p["const"]) if p else 8)
 
