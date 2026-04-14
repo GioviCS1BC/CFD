@@ -15,7 +15,7 @@ considerando che **il tempo è un costo**.
 # --- LOGICA DI CALCOLO AVANZATA ---
 def run_simulation(capex, const_years, discount_rate, inflation, strike_price, op_life, is_indexed, has_risk):
     # Il rischio aumenta il costo del capitale (WACC)
-    effective_rate = discount_rate + (0.04 if has_risk else 0)
+    effective_rate = discount_rate + (0.03 if has_risk else 0)
     
     total_years = const_years + op_life
     years = np.arange(0, total_years + 1)
@@ -36,8 +36,8 @@ def run_simulation(capex, const_years, discount_rate, inflation, strike_price, o
             # Fase Operativa
             # Ricavo: indicizzato o fisso
             rev = strike_price * ((1 + inflation)**y) if is_indexed else strike_price
-            # OPEX: stimato al 25% dello strike, sempre inflazionato
-            opex = (strike_price * 0.25) * ((1 + inflation)**y)
+            # OPEX: stimato al 20% dello strike, sempre inflazionato
+            opex = (strike_price * 0.20) * ((1 + inflation)**y)
             cf = rev - opex
         cash_flows.append(cf)
     
@@ -65,19 +65,19 @@ st.subheader("⚙️ Parametri dell'Investimento")
 c1, c2, c3 = st.columns(3)
 
 with c1:
-    capex_val = st.slider("Investimento Nominale (M€)", 100, 5000, 1000, step=100)
-    const_time = st.slider("Anni di Costruzione/Autorizzazione", 1, 15, 7)
-    op_time = st.slider("Vita Operativa (Anni)", 10, 60, 30)
+    capex_val = st.slider("Investimento (CAPEX) M€", 10, 500, 100, step=10)
+    const_time = st.slider("Anni Autorizzazione/Costruzione", 1, 10, 3)
+    strike_val = st.slider("Ricavo Annuo (Strike Price) M€", 5, 100, 25)
 
 with c2:
-    wacc_base = st.slider("Tasso di Sconto Base (WACC) %", 1.0, 15.0, 5.0) / 100
+    wacc_base = st.slider("Tasso di Sconto Base (WACC) %", 0.0, 15.0, 7.0) / 100
     infl_val = st.slider("Tasso Inflazione %", 0.0, 10.0, 2.0) / 100
-    strike_val = st.slider("Ricavo Annuo Target (M€)", 50, 1000, 250)
+    op_time = st.slider("Anni di Operatività", 10, 30, 20)
 
 with c3:
     st.write("**Clausole e Rischi**")
-    indexed = st.checkbox("CFD Indicizzato (Protezione Inflazione)", value=True)
-    risk = st.checkbox("Aggiungi Premio al Rischio (+4% WACC)", value=False)
+    indexed = st.checkbox("CFD Indicizzato all'inflazione", value=True)
+    risk = st.checkbox("Applica Fattore di Rischio (+3% WACC)", value=False)
     st.info("Il rischio simula incertezza normativa o tecnologica.")
 
 # Esecuzione
@@ -90,7 +90,7 @@ npv_percentage = (npv_absolute / capex_val) * 100
 # --- RENDERING RISULTATI ---
 with metrics_spot:
     m1, m2, m3 = st.columns(3)
-    # Visualizzazione VAN in percentuale mantenendo l'intestazione originale
+    # Visualizzazione VAN in percentuale
     m1.metric("VAN del Progetto", f"{npv_percentage:.2f} %", 
               delta="Redditizio" if npv_absolute > 0 else "In Perdita", delta_color="normal")
     m2.metric("CAPEX Reale (Capitalizzato)", f"{capex_real:.2f} M€", 
@@ -127,19 +127,21 @@ st.divider()
 exp, disc = st.columns([2, 1])
 
 with exp:
-    with st.expander("📚 Analisi del Valore"):
+    with st.expander("📚 Analisi del Valore e del Tempo"):
         st.write(f"""
         Il **VAN del Progetto** espresso in percentuale ({npv_percentage:.2f}%) indica il rendimento netto attualizzato 
         rispetto all'esborso nominale di {capex_val} M€. 
         
-        Un valore del 100% significherebbe che il progetto raddoppia il valore del capitale investito (in termini reali).
+        **L'effetto del tempo:** Spendere {capex_val} M€ in {const_time} anni non equivale a spenderli oggi. 
+        Durante la costruzione, i capitali impiegati non rendono e accumulano 'passività' (costo del denaro). 
+        Per questo il **CAPEX Reale** (il debito accumulato all'accensione) è superiore a quello nominale.
         """)
 
 with disc:
     # Disclaimer cliccabile
     with st.expander("⚠️ Disclaimer & Contatti"):
         st.write("""
-        I risultati sono stime basate su modelli semplificati. 
+        I risultati sono stime basate su modelli finanziari semplificati (DCF). 
         Per approfondimenti o consulenze:
         """)
         st.markdown(f"📧 [giovanni@unbelclima.it](mailto:giovanni@unbelclima.it)")
