@@ -10,7 +10,7 @@ st.set_page_config(page_title="CFD Simulator 1GW", layout="wide")
 POWER_W = 1_000_000_000
 POWER_MW = 1000
 
-st.title("⚛️ Simulatore Finanziario 1 GW: Efficienza del Capitale")
+st.title("Simulatore Economico Infrastrutture Energetiche.")
 
 # --- LOGICA DI CALCOLO ---
 def run_simulation(capex_w, oem_w, cf, strike_mwh, wacc_base, const_yrs, op_yrs, infl, is_idx, is_risk):
