@@ -54,12 +54,11 @@ def run_simulation(capex, const_years, discount_rate, inflation, annual_revenue,
 # --- DEFINIZIONE PRESET TECNOLOGIE (AGGIORNATI) ---
 presets = {
     "Manuale": None,
-    "Fotovoltaico": {"mw": 100, "costo_w": 0.8, "om": 10.0, "const": 1, "cf": 18, "strike": 60, "life": 25, "wacc": 5.0},
-    "Eolico a terra": {"mw": 100, "costo_w": 1.3, "om": 15.0, "const": 2, "cf": 25, "strike": 70, "life": 25, "wacc": 5.0},
+    "Fotovoltaico": {"mw": 100, "costo_w": 0.8, "om": 1.0, "const": 1, "cf": 18, "strike": 60, "life": 25, "wacc": 5.0},
+    "Eolico a terra": {"mw": 100, "costo_w": 1.3, "om": 5.0, "const": 2, "cf": 25, "strike": 70, "life": 25, "wacc": 5.0},
     # Dati Nucleare aggiornati su costi reali FOAK/NOAK occidentali
-    "Nucleare (Large)": {"mw": 1600, "costo_w": 11.0, "om": 30.0, "const": 12, "cf": 90, "strike": 140, "life": 60, "wacc": 7.0},
-    # Dati SMR aggiornati post-revisione costi (es. NuScale)
-    "SMR (Small Modular Reactor)": {"mw": 300, "costo_w": 8.5, "om": 25.0, "const": 5, "cf": 90, "strike": 120, "life": 60, "wacc": 7.0}
+    "Nucleare": {"mw": 1600, "costo_w": 11.0, "om": 30.0, "const": 12, "cf": 90, "strike": 140, "life": 60, "wacc": 7.0},
+    
 }
 
 # --- INTERFACCIA GRAFICA ---
